@@ -1,6 +1,7 @@
 from flask import Flask
 
 from db import *
+from util.blueprints import register_blueprints
 
 app = Flask(__name__)
 
@@ -17,6 +18,9 @@ def create_tables():
         print("creating tables...")
         db.create_all()
         print("tables created successfully")
+
+
+register_blueprints(app)
 
 
 if __name__ == "__main__":
