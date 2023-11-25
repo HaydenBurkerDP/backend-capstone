@@ -1,0 +1,14 @@
+from flask_sqlalchemy import SQLAlchemy
+from flask import Flask
+
+__all__ = ("db", "init_db")
+
+db = SQLAlchemy()
+
+
+def init_db(app=None, db=None):
+    if isinstance(app, Flask) and isinstance(db, SQLAlchemy):
+        db.init_app(app)
+
+    else:
+        raise ValueError("Cannot init DB without db and app objects")
