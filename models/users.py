@@ -16,6 +16,8 @@ class Users(db.Model):
     role = db.Column(db.String(), nullable=False)
     active = db.Column(db.Boolean(), nullable=False)
 
+    auth = db.relationship("AuthTokens", back_populates="user")
+
     def __init__(self, first_name, last_name, email, password, role, active):
         self.first_name = first_name
         self.last_name = last_name
