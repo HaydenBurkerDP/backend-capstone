@@ -17,10 +17,10 @@ class Users(db.Model):
     role = db.Column(db.String(), nullable=False)
     active = db.Column(db.Boolean(), nullable=False)
 
-    auth = db.relationship("AuthTokens", back_populates="user")
+    auth = db.relationship("AuthTokens", back_populates="user", cascade="all,delete")
     goals = db.relationship("Goals", secondary=users_goals_association_table, back_populates="users")
-    goal_logs = db.relationship("GoalLogs", back_populates="user")
-    created_goals = db.relationship("Goals", back_populates="creator")
+    goal_logs = db.relationship("GoalLogs", back_populates="user", cascade="all,delete")
+    created_goals = db.relationship("Goals", back_populates="creator", cascade="all,delete")
 
     def __init__(self, first_name, last_name, email, password, role, active):
         self.first_name = first_name
