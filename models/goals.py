@@ -31,10 +31,11 @@ class Goals(db.Model):
 
 class GoalsSchema(ma.Schema):
     class Meta:
-        fields = ["goal_id", "name", "description", "creator", "categories"]
+        fields = ["goal_id", "name", "description", "creator", "categories", "users"]
 
     creator = ma.fields.Nested("UsersSchema")
     categories = ma.fields.Nested("CategoriesSchema", many=True)
+    users = ma.fields.Nested("UsersSchema", many=True)
 
 
 goal_schema = GoalsSchema()

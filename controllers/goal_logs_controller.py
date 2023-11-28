@@ -1,5 +1,4 @@
 from flask import jsonify
-import json
 
 from db import db
 from lib.authenticate import authenticate, authenticate_return_auth
