@@ -5,6 +5,7 @@ from db import db
 from lib.authenticate import authenticate, authenticate_return_auth
 from util.reflection import populate_object
 from util.validate_uuid4 import validate_uuid4
+from models.categories import Categories
 from models.goal_logs import GoalLogs, goal_log_schema, goal_logs_schema
 from models.goals import Goals
 
@@ -24,9 +25,30 @@ def goal_log_add(req, auth_info):
         if not goal_query:
             return jsonify({"message": "goal not found"}), 404
 
+    category_ids = post_data.get("category_ids")
+    if category_ids:
+        post_data.pop("category_ids")
+
     new_goal_log = GoalLogs.get_new_goal_log()
     populate_object(new_goal_log, post_data)
     new_goal_log.user_id = auth_info.user_id
+
+    if goal_id:
+        for category in goal_query.categories:
+            new_goal_log.categories.append(category)
+
+    elif category_ids:
+        for category_id in category_ids:
+            if not validate_uuid4(category_id):
+                return jsonify({"message": "invalid category id"}), 400
+
+        categories_query = db.session.query(Categories).filter(Categories.category_id.in_(category_ids)).all()
+
+        for category in categories_query:
+            if not category:
+                return jsonify({"message": "category not found"}), 404
+
+            new_goal_log.categories.append(category)
 
     if goal_query:
         new_goal_log.name = goal_query.name
@@ -38,6 +60,7 @@ def goal_log_add(req, auth_info):
     return jsonify({"message": "goal log added", "goal_log": goal_log_schema.dump(new_goal_log)}), 201
 
 
+@authenticate
 def goal_log_get_by_id(req, goal_log_id):
     if not validate_uuid4(goal_log_id):
         return jsonify({"message": "invalid goal log id"}), 400
@@ -51,12 +74,21 @@ def goal_log_get_by_id(req, goal_log_id):
         return jsonify({"message": "goal log found", "goal_log": goal_log_schema.dump(goal_log_query)}), 200
 
 
+@authenticate
 def goal_logs_get_all(req):
     goal_logs_query = db.session.query(GoalLogs).all()
 
     return jsonify({"message": "goal logs found", "goal_logs": goal_logs_schema.dump(goal_logs_query)}), 200
 
 
+@authenticate_return_auth
+def goal_logs_get_from_auth_info(req, auth_info):
+    goal_logs_query = db.session.query(GoalLogs).filter(GoalLogs.user_id == auth_info.user_id).all()
+
+    return jsonify({"message": "goal logs found", "goal_logs": goal_logs_schema.dump(goal_logs_query)}), 200
+
+
+@authenticate
 def goal_log_update_by_id(req, goal_log_id):
     if not validate_uuid4(goal_log_id):
         return jsonify({"message": "invalid goal log id"}), 400
@@ -68,12 +100,35 @@ def goal_log_update_by_id(req, goal_log_id):
     if not goal_log_query:
         return jsonify({"message": "goal log not found"}), 404
 
+    category_ids = post_data.get("category_ids")
+    if category_ids:
+        post_data.pop("category_ids")
+
     populate_object(goal_log_query, post_data)
+
+    if category_ids:
+        for category_id in category_ids:
+            if not validate_uuid4(category_id):
+                return jsonify({"message": "invalid category id"}), 400
+
+        categories_query = db.session.query(Categories).filter(Categories.category_id.in_(category_ids)).all()
+
+        for category in categories_query:
+            if not category:
+                return jsonify({"message": "category not found"}), 404
+
+            if category in goal_log_query.categories:
+                goal_log_query.categories.pop(goal_log_query.categories.index(category))
+
+            else:
+                goal_log_query.categories.append(category)
+
     db.session.commit()
 
     return jsonify({"message": "goal log updated", "goal_log": goal_log_schema.dump(goal_log_query)}), 200
 
 
+@authenticate
 def goal_log_delete_by_id(req, goal_log_id):
     if not validate_uuid4(goal_log_id):
         return jsonify({"message": "invalid goal log id"}), 400

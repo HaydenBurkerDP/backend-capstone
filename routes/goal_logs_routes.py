@@ -20,6 +20,11 @@ def goal_logs_get_all():
     return controllers.goal_logs_get_all(request)
 
 
+@goal_logs.route("/goal-logs/me", methods=["GET"])
+def goal_logs_get_from_auth_info():
+    return controllers.goal_logs_get_from_auth_info(request)
+
+
 @goal_logs.route("/goal-log/<goal_log_id>", methods=["PUT"])
 def goal_log_update_by_id(goal_log_id):
     return controllers.goal_log_update_by_id(request, goal_log_id)

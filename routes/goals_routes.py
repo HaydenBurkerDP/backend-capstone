@@ -20,6 +20,16 @@ def goals_get_all():
     return controllers.goals_get_all(request)
 
 
+@goals.route("/goals/me", methods=["GET"])
+def goals_get_from_auth_info():
+    return controllers.goals_get_from_auth_token(request)
+
+
+@goals.route("/goals/shared", methods=["GET"])
+def goals_get_shared():
+    return controllers.goals_get_shared(request)
+
+
 @goals.route("/goals/category/<category_id>", methods=["GET"])
 def goals_get_by_category_id(category_id):
     return controllers.goals_get_by_category_id(request, category_id)

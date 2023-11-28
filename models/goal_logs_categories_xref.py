@@ -1,6 +1,6 @@
 from db import db
 
-goal_log_category_association_table = db.Table(
+goal_logs_categories_association_table = db.Table(
     "GoalLogCategoryXref",
     db.Model.metadata,
     db.Column("goal_log_id", db.ForeignKey("GoalLogs.goal_log_id"), primary_key=True),

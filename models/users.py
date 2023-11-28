@@ -3,6 +3,7 @@ import marshmallow as ma
 import uuid
 
 from db import db
+from models.users_goals_xref import users_goals_association_table
 
 
 class Users(db.Model):
@@ -17,6 +18,9 @@ class Users(db.Model):
     active = db.Column(db.Boolean(), nullable=False)
 
     auth = db.relationship("AuthTokens", back_populates="user")
+    goals = db.relationship("Goals", secondary=users_goals_association_table, back_populates="users")
+    goal_logs = db.relationship("GoalLogs", back_populates="user")
+    created_goals = db.relationship("Goals", back_populates="creator")
 
     def __init__(self, first_name, last_name, email, password, role, active):
         self.first_name = first_name
