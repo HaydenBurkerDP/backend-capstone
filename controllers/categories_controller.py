@@ -1,14 +1,17 @@
 from flask import jsonify
 
 from db import db
-from lib.authenticate import authenticate, authenticate_return_auth
+from lib.authenticate import authenticate_return_auth
 from util.reflection import populate_object
 from util.validate_uuid4 import validate_uuid4
 from models.categories import Categories, category_schema, categories_schema
 
 
-@authenticate
-def category_add(req):
+@authenticate_return_auth
+def category_add(req, auth_info):
+    if auth_info.user.role not in ["super-admin", "admin"]:
+        return jsonify({"message": "unauthorized"}), 403
+
     post_data = req.form if req.form else req.json
 
     new_category = Categories.get_new_category()
@@ -20,12 +23,17 @@ def category_add(req):
     return jsonify({"message": "category added", "category": category_schema.dump(new_category)}), 201
 
 
-@authenticate
-def category_get_by_id(req, category_id):
+@authenticate_return_auth
+def category_get_by_id(req, category_id, auth_info):
     if not validate_uuid4(category_id):
         return jsonify({"message": "invalid category id"}), 400
 
-    category_query = db.session.query(Categories).filter(Categories.category_id == category_id).first()
+    category_query = db.session.query(Categories).filter(Categories.category_id == category_id)
+
+    if auth_info.user.role != "super-admin":
+        category_query = category_query.filter(Categories.active == True)
+
+    category_query = category_query.first()
 
     if not category_query:
         return jsonify({"message": "category not found"}), 404
@@ -34,15 +42,23 @@ def category_get_by_id(req, category_id):
         return jsonify({"message": "category found", "category": category_schema.dump(category_query)}), 200
 
 
-@authenticate
-def categories_get_all(req):
-    categories_query = db.session.query(Categories).all()
+@authenticate_return_auth
+def categories_get_all(req, auth_info):
+    categories_query = db.session.query(Categories)
+
+    if auth_info.user.role != "super-admin":
+        categories_query = categories_query.filter(Categories.active == True)
+
+    categories_query = categories_query.all()
 
     return jsonify({"message": "categories found", "categories": categories_schema.dump(categories_query)}), 200
 
 
-@authenticate
-def category_update_by_id(req, category_id):
+@authenticate_return_auth
+def category_update_by_id(req, category_id, auth_info):
+    if auth_info.user.role not in ["super-admin", "admin"]:
+        return jsonify({"message": "unauthorized"}), 403
+
     if not validate_uuid4(category_id):
         return jsonify({"message": "invalid category id"}), 400
 
@@ -59,7 +75,11 @@ def category_update_by_id(req, category_id):
     return jsonify({"message": "category updated", "category": category_schema.dump(category_query)}), 200
 
 
-def category_activity(req, category_id):
+@authenticate_return_auth
+def category_activity(req, category_id, auth_info):
+    if auth_info.user.role not in ["super-admin", "admin"]:
+        return jsonify({"message": "unauthorized"}), 403
+
     if not validate_uuid4(category_id):
         return jsonify({"message": "invalid category id"}), 400
 
@@ -77,8 +97,11 @@ def category_activity(req, category_id):
         return jsonify({"message": "category deactivated", "category": category_schema.dump(category_query)}), 200
 
 
-@authenticate
-def category_delete_by_id(req, category_id):
+@authenticate_return_auth
+def category_delete_by_id(req, category_id, auth_info):
+    if auth_info.user.role != "super-admin":
+        return jsonify({"message": "unauthorized"}), 403
+
     if not validate_uuid4(category_id):
         return jsonify({"message": "invalid category id"}), 400
 

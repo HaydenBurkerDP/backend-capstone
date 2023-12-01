@@ -143,6 +143,9 @@ def user_delete_by_id(req, user_id, auth_info):
     if not validate_uuid4(user_id):
         return jsonify({"message": "invalid user id"}), 400
 
+    if user_id == str(auth_info.user_id):
+        return jsonify({"message": "cannot delete yourself"}), 403
+
     user_query = db.session.query(Users).filter(Users.user_id == user_id).first()
 
     if not user_query:

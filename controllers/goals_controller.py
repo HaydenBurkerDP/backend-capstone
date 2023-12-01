@@ -57,8 +57,11 @@ def goal_get_by_id(req, goal_id):
         return jsonify({"message": "goal found", "goal": goal_schema.dump(goal_query)}), 200
 
 
-@authenticate
-def goals_get_all(req):
+@authenticate_return_auth
+def goals_get_all(req, auth_info):
+    if auth_info.user.role != "super-admin":
+        return jsonify({"message": "unauthorized"}), 403
+
     goals_query = db.session.query(Goals).all()
 
     return jsonify({"message": "goals found", "goals": goals_schema.dump(goals_query)}), 200
@@ -109,16 +112,31 @@ def goal_update_by_id(req, goal_id, auth_info):
     if not goal_query:
         return jsonify({"message": "goal not found"}), 404
 
+    if goal_query.creator_id != auth_info.user_id and auth_info.user.role != "super-admin":
+        return jsonify({"message": "cannot edit a goal created by someone else"}), 403
+
     category_ids = post_data.get("category_ids")
-    if category_ids:
+    if "category_ids" in post_data:
         post_data.pop("category_ids")
 
     user_id = post_data.get("user_id")
-    if user_id:
+    if "user_id" in post_data:
         post_data.pop("user_id")
 
+    creator_id = post_data.get("creator_id")
+    if "creator_id" in post_data:
+        if creator_id != str(auth_info.user_id) and auth_info.user.role != "super-admin":
+            return jsonify({"message": "cannot change creator id"}), 400
+
+        if not validate_uuid4(creator_id):
+            return jsonify({"message": "invalid creator id"}), 400
+
+        user_query = db.session.query(Users).filter(Users.user_id == creator_id).first()
+
+        if not user_query:
+            return jsonify({"message": "user not found"}), 404
+
     populate_object(goal_query, post_data)
-    goal_query.creator_id = auth_info.user_id
 
     if category_ids:
         for category_id in category_ids:
@@ -157,8 +175,8 @@ def goal_update_by_id(req, goal_id, auth_info):
     return jsonify({"message": "goal updated", "goal": goal_schema.dump(goal_query)}), 200
 
 
-@authenticate
-def goal_delete_by_id(req, goal_id):
+@authenticate_return_auth
+def goal_delete_by_id(req, goal_id, auth_info):
     if not validate_uuid4(goal_id):
         return jsonify({"message": "invalid goal id"}), 400
 
@@ -166,6 +184,9 @@ def goal_delete_by_id(req, goal_id):
 
     if not goal_query:
         return jsonify({"message": "goal not found"}), 404
+
+    if goal_query.creator_id != str(auth_info.user_id) and auth_info.user.role != "super-admin":
+        return jsonify({"message": "cannot delete a goal created by someone else"}), 403
 
     db.session.delete(goal_query)
     db.session.commit()
