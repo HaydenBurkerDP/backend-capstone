@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_bcrypt import generate_password_hash
+from flask_cors import CORS
 
 from db import *
 from util.blueprints import register_blueprints
@@ -48,6 +49,7 @@ def create_tables():
         create_super_admin()
 
 
+CORS(app)
 register_blueprints(app)
 
 

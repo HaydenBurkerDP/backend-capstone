@@ -52,6 +52,16 @@ def user_get_by_id(req, user_id, auth_info):
 
 
 @authenticate_return_auth
+def user_get_from_auth_token(req, auth_info):
+    user_query = db.session.query(Users).filter(Users.user_id == auth_info.user_id).first()
+
+    if not user_query:
+        return jsonify({"message": "user not found"}), 404
+
+    return jsonify({"message": "user found", "user": user_schema.dump(user_query)}), 200
+
+
+@authenticate_return_auth
 def users_get_all(req, auth_info):
     users_query = db.session.query(Users)
 

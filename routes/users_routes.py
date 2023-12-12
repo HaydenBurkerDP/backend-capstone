@@ -15,6 +15,11 @@ def user_get_by_id(user_id):
     return controllers.user_get_by_id(request, user_id)
 
 
+@users.route("/user/me", methods=["GET"])
+def user_get_from_auth_token():
+    return controllers.user_get_from_auth_token(request)
+
+
 @users.route("/users", methods=["GET"])
 def users_get_all():
     return controllers.users_get_all(request)
