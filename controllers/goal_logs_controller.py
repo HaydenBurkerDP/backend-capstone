@@ -107,7 +107,7 @@ def goal_log_update_by_id(req, goal_log_id, auth_info):
         return jsonify({"message": "unauthorized"}), 403
 
     category_ids = post_data.get("category_ids")
-    if category_ids:
+    if "category_ids" in post_data:
         post_data.pop("category_ids")
 
     user_id = post_data.get("user_id")
