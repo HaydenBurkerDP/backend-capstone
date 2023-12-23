@@ -13,6 +13,7 @@ marshmallow-sqlalchemy = "*"
 flask-marshmallow = "*"
 flask-bcrypt = "*"
 flask-cors = "*"
+python-dotenv = "*"
 
 [dev-packages]
 

@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_bcrypt import generate_password_hash
 from flask_cors import CORS
+import os
 
 from db import *
 from util.blueprints import register_blueprints
@@ -8,8 +9,17 @@ from models.users import Users
 
 app = Flask(__name__)
 
+flask_host = os.environ.get("FLASK_HOST")
+flask_port = os.environ.get("FLASK_PORT")
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://127.0.0.1:5432/backend-capstone"
+database_schema = os.environ.get("DATABASE_SCHEME")
+database_user = os.environ.get("DATABASE_USER")
+database_address = os.environ.get("DATABASE_ADDRESS")
+database_port = os.environ.get("DATABASE_PORT")
+database_name = os.environ.get("DATABASE_NAME")
+
+
+app.config["SQLALCHEMY_DATABASE_URI"] = f"{database_schema}{database_user}@{database_address}:{database_port}/{database_name}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 
@@ -52,7 +62,6 @@ def create_tables():
 CORS(app)
 register_blueprints(app)
 
-
 if __name__ == "__main__":
     create_tables()
-    app.run(host="0.0.0.0", port="8086", debug=True)
+    app.run(host=flask_host, port=flask_port, debug=True)
