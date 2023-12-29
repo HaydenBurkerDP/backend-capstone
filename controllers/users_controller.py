@@ -15,6 +15,12 @@ def user_add(req, auth_info):
 
     post_data = req.form if req.form else req.json
 
+    fields = ["email", "password"]
+
+    for field in fields:
+        if field not in post_data or not post_data[field]:
+            return jsonify({"message": f"{field} is required"}), 400
+
     role = post_data.get("role")
 
     if "role" in post_data and role not in ["super-admin", "admin", "user"]:
@@ -82,6 +88,12 @@ def user_update_by_id(req, user_id, auth_info):
         return jsonify({"message": "unauthorized"}), 403
 
     post_data = req.form if req.form else req.json
+
+    fields = ["email", "password"]
+
+    for field in fields:
+        if field in post_data and not post_data[field]:
+            return jsonify({"message": f"invalid {field}"}), 400
 
     active = post_data.get("active")
     role = post_data.get("role")

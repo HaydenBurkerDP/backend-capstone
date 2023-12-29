@@ -3,6 +3,7 @@ from flask_bcrypt import check_password_hash
 from datetime import datetime, timedelta
 
 from db import db
+from lib.authenticate import authenticate_return_auth
 from models.auth_tokens import AuthTokens, auth_token_schema
 from models.users import Users
 
@@ -47,3 +48,10 @@ def auth_token_add(req):
     db.session.commit()
 
     return jsonify({"auth_info": auth_token_schema.dump(new_token)}), 201
+
+
+@authenticate_return_auth
+def auth_token_remove(req, auth_info):
+    db.session.delete(auth_info)
+    db.session.commit()
+    return jsonify({"message": "user logged out"}), 200
