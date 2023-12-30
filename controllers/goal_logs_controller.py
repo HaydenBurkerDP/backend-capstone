@@ -161,7 +161,7 @@ def goal_log_delete_by_id(req, goal_log_id, auth_info):
     if not goal_log_query:
         return jsonify({"message": "goal log not found"}), 404
 
-    if goal_log_query.user_id != str(auth_info.user_id) and auth_info.user.role != "super-admin":
+    if goal_log_query.user_id != auth_info.user_id and auth_info.user.role != "super-admin":
         return jsonify({"message": "unauthorized"}), 403
 
     db.session.delete(goal_log_query)

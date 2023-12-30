@@ -185,7 +185,7 @@ def goal_delete_by_id(req, goal_id, auth_info):
     if not goal_query:
         return jsonify({"message": "goal not found"}), 404
 
-    if goal_query.creator_id != str(auth_info.user_id) and auth_info.user.role != "super-admin":
+    if goal_query.creator_id != auth_info.user_id and auth_info.user.role != "super-admin":
         return jsonify({"message": "cannot delete a goal created by someone else"}), 403
 
     db.session.delete(goal_query)
