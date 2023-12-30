@@ -6,6 +6,7 @@ import os
 from db import *
 from util.blueprints import register_blueprints
 from models.users import Users
+from demo_data.demo_data import run_demo_data
 
 app = Flask(__name__)
 
@@ -34,7 +35,7 @@ def create_super_admin():
         print("Super Admin not found! Creating new user")
         first_name = "Super"
         last_name = "Admin"
-        email = input("Enter an email for the Super Admin: ")
+        email = "super-admin@test.com"
         password = input("Enter a password for the Super Admin: ")
         role = "super-admin"
         active = True
@@ -57,6 +58,7 @@ def create_tables():
         print("tables created successfully")
 
         create_super_admin()
+        run_demo_data()
 
 
 CORS(app)
